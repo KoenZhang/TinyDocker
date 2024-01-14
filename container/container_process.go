@@ -38,13 +38,15 @@ func NewParentProcess(tty bool) (*exec.Cmd, *os.File) {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 	}
-
+	// 传入管道文件读取端的句柄
 	cmd.ExtraFiles = []*os.File{readPipe}
 
 	return cmd, writePipe
 }
 
+// 通过匿名管道传递参数
 func NewPipe() (*os.File, *os.File, error) {
+	// 生成匿名管道
 	read, write, err := os.Pipe()
 	if err != nil {
 		return nil, nil, err

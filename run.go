@@ -36,6 +36,7 @@ func Run(tty bool, comArray []string, res *subsystems.ResourceConfig) {
 	sendInitCommand(comArray, writePipe)
 
 	parent.Wait()
+	os.Exit(0)
 }
 
 func sendInitCommand(comArray []string, writePipe *os.File) {
