@@ -19,7 +19,7 @@ var runCommand = cli.Command{
 			Usage: "enable tty",
 		},
 		cli.StringFlag{
-			Name:  "m",
+			Name:  "mem",
 			Usage: "memory limit",
 		},
 		cli.StringFlag{
@@ -48,7 +48,8 @@ var runCommand = cli.Command{
 		}
 		tty := context.Bool("ti")
 		resconf := &subsystems.ResourceConfig{
-			MemoryLimit: context.String("m"),
+			// 用 mem，不用 m，是因为后面测试的时候，有个参数是 m：sudo ./tinydocker run -ti -mem 100m stress --vm-bytes 200m --vm-keep -m 1
+			MemoryLimit: context.String("mem"),
 			CpuSet:      context.String("cpuset"),
 			CpuShare:    context.String("cpushare"),
 		}

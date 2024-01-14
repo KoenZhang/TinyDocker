@@ -31,7 +31,7 @@ func (s *MemorySubSystem) Set(cgroupPath string, res *ResourceConfig) error {
 // 将一个进程添加到 cgroupPath 中
 func (s *MemorySubSystem) Apply(cgroupPath string, pid int) error {
 	//  获取当前 subsystem 在虚拟文件系统中的路径
-	if subsysCgroupPath, err := GetCgroupPath(s.Name(), cgroupPath, true); err == nil {
+	if subsysCgroupPath, err := GetCgroupPath(s.Name(), cgroupPath, false); err == nil {
 		// 把进程的PID写到 cgroup 的虚拟文件系统对应目录下的 "tasks" 文件中
 		if err := ioutil.WriteFile(path.Join(subsysCgroupPath, "tasks"), []byte(strconv.Itoa(pid)), 0644); err != nil {
 			return fmt.Errorf("set cgroup proc fail %v", err)
@@ -46,7 +46,7 @@ func (s *MemorySubSystem) Apply(cgroupPath string, pid int) error {
 func (s *MemorySubSystem) Remove(cgroupPath string) error {
 	if subsysCgroupPath, err := GetCgroupPath(s.Name(), cgroupPath, false); err == nil {
 		// 删除 cgroup 便是删除对应的 cgroupPath 的目录
-		return os.Remove(subsysCgroupPath)
+		return os.RemoveAll(subsysCgroupPath)
 	} else {
 		return err
 	}

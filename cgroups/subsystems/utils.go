@@ -12,8 +12,9 @@ import (
 func FindCgroupMountpoint(subsystem string) string {
 	f, err := os.Open("/proc/self/mountinfo")
 	if err != nil {
-		defer f.Close()
+		return ""
 	}
+	defer f.Close()
 
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
