@@ -1,6 +1,7 @@
 package main
 
 import (
+	"TinyDocker/cgroups/subsystems"
 	"TinyDocker/container"
 	"fmt"
 	log "github.com/sirupsen/logrus"
@@ -17,6 +18,18 @@ var runCommand = cli.Command{
 			Name:  "ti",
 			Usage: "enable tty",
 		},
+		cli.StringFlag{
+			Name:  "m",
+			Usage: "memory limit",
+		},
+		cli.StringFlag{
+			Name:  "cpushare",
+			Usage: "cpushare limit",
+		},
+		cli.StringFlag{
+			Name:  "cpuset",
+			Usage: "cpuset limit",
+		},
 	},
 
 	/*
@@ -29,10 +42,17 @@ var runCommand = cli.Command{
 		if len(context.Args()) < 1 {
 			return fmt.Errorf("Missing container command")
 		}
-
-		cmd := context.Args().Get(0)
+		var cmdArray []string
+		for _, arg := range context.Args() {
+			cmdArray = append(cmdArray, arg)
+		}
 		tty := context.Bool("ti")
-		Run(tty, cmd)
+		resconf := &subsystems.ResourceConfig{
+			MemoryLimit: context.String("m"),
+			CpuSet:      context.String("cpuset"),
+			CpuShare:    context.String("cpushare"),
+		}
+		Run(tty, cmdArray, resconf)
 		return nil
 	},
 }
@@ -48,9 +68,7 @@ var initCommand = cli.Command{
 	*/
 	Action: func(context *cli.Context) error {
 		log.Info("init come on")
-		cmd := context.Args().Get(0)
-		log.Infof("init command %s", cmd)
-		err := container.RunContainerInitProcess(cmd, nil)
+		err := container.RunContainerInitProcess()
 		return err
 	},
 }

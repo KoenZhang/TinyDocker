@@ -1,19 +1,25 @@
 package container
 
 import (
+	log "github.com/sirupsen/logrus"
 	"os"
 	"os/exec"
 	"syscall"
 )
 
-func NewParentProcess(tty bool, command string) *exec.Cmd {
-	args := []string{"init", command}
+func NewParentProcess(tty bool) (*exec.Cmd, *os.File) {
+	readPipe, writePipe, err := NewPipe()
+	if err != nil {
+		log.Errorf("New pipe error %v", err)
+		return nil, nil
+	}
+
 	/*
 		指定被 fork 出来的新进程内的初始命令, 默认使用 /proc/self/exec,
 		/proc/self/ 指当前运行进程自己的环境，exec 就是自己调用自己，使用这种方式对创建出来的进程进行初始化
 		args 是参数，其中 init 是传递给本进程的第一个参数，也就是调用 initCommand 初始化进程的一些环境和资源
 	*/
-	cmd := exec.Command("/proc/self/exe", args...)
+	cmd := exec.Command("/proc/self/exe", "init")
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		/* fork 一个新的进程出来，使用了 namespace 隔离新创建的进程和外部环境
 		CLONE_NEWUTS: 创建一个 UTS Namespace, 每个 TS namespace 允许有自己的 hostname
@@ -33,5 +39,15 @@ func NewParentProcess(tty bool, command string) *exec.Cmd {
 		cmd.Stderr = os.Stderr
 	}
 
-	return cmd
+	cmd.ExtraFiles = []*os.File{readPipe}
+
+	return cmd, writePipe
+}
+
+func NewPipe() (*os.File, *os.File, error) {
+	read, write, err := os.Pipe()
+	if err != nil {
+		return nil, nil, err
+	}
+	return read, write, nil
 }
